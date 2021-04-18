@@ -3,48 +3,49 @@
 const vm = require('vm')
 const fs = require('fs')
 const path = require('path')
-
-const tscPath = path.join(path.dirname(require.resolve('typescript')), 'tsc.js')
-const tscScript = vm.createScript(fs.readFileSync(tscPath, 'utf8'), tscPath)
-
 const tmpDir = path.join(__dirname, './tmp')
 
-function complieTypescript(filePath: string): any {
-  var exitCode = 0
-  var relativeFolder = path.dirname(path.relative(process.cwd(), module.filename))
-  var jsname = path.join(tmpDir, relativeFolder, path.basename(module.filename, '.ts') + '.js')
-  var argv = [
+function compileTypescript(filePath: string): any {
+  let exitCode = 0
+  const tscPath = path.join(path.dirname(require.resolve('typescript')), 'tsc.js')
+  const tscScript = vm.createScript(fs.readFileSync(tscPath, 'utf8'), tscPath)
+  const relativeFolder = path.dirname(path.relative(process.cwd(), filePath))
+  const compileResultFilePath = path.join(
+    tmpDir,
+    relativeFolder,
+    path.basename(filePath, '.ts') + '.js',
+  )
+  const argv = [
     'node',
     'tsc.js',
-   '--noEmitOnError',
+    '--noEmitOnError',
     '--rootDir',
     process.cwd(),
-    '--target ES5',
+    '--target',
+    'ES5',
     '--module',
+    'commonjs',
     '--outDir',
     tmpDir,
     filePath,
   ]
 
-  var proc = merge(merge({}, process), {
-    argv: compact(argv),
-    exit: function (code) {
-      if (code !== 0 && options.exitOnError) {
-        console.error('Fatal Error. Unable to compile TypeScript file. Exiting.')
-        process.exit(code)
-      }
+  const proc = {
+    ...process,
+    argv: [...argv],
+    exit: function (code: number) {
       exitCode = code
     },
-  })
+  }
 
-  var sandbox = {
+  const sandbox = {
     process: proc,
     require: require,
     module: module,
     Buffer: Buffer,
     setTimeout: setTimeout,
     clearTimeout: clearTimeout,
-    __filename: tsc,
+    __filename: tscPath,
   }
 
   tscScript.runInNewContext(sandbox)
@@ -52,7 +53,20 @@ function complieTypescript(filePath: string): any {
     throw new Error('Unable to compile TypeScript file.')
   }
 
-  return jsname
+  return compileResultFilePath
 }
 
-export function requireTypescript<T extends any>(path: string): T {}
+function runJavascriptFile(jsPath: string) {
+  const content = fs.readFileSync(jsPath, 'utf8')
+  const sandbox: any = {
+    ...global,
+  }
+  sandbox.exports = module.exports
+
+  return vm.runInNewContext(content, sandbox, { filename: jsPath })
+}
+
+export function requireTypescript<T extends any>(path: string): T {
+  const compileResultFilePath = compileTypescript(path)
+  return runJavascriptFile(compileResultFilePath)
+}
