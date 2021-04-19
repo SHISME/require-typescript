@@ -2,7 +2,7 @@ A tool for Require typescript modules in node.
 
 ## Installation
 ```shell
-npm install require-typescript --save
+npm install require-typescript-module --save
 ```
 
 ## Usage
