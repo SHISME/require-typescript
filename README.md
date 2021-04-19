@@ -19,9 +19,9 @@ export default {
 
 ```javascript
 
-const { requireTypescript } = require('require-typescript');
+const { requireTypescriptModule } = require('require-typescript-module');
 
 const path = require('path');
 
-const config = requireTypescript(path.resolve(__dirname, './config.ts')); // { name: 'config' }
+const config = requireTypescriptModule(path.resolve(__dirname, './config.ts')); // { name: 'config' }
 ```

@@ -68,7 +68,7 @@ function runJavascriptFile(jsPath: string) {
   return vm.runInNewContext(content, sandbox, { filename: jsPath })
 }
 
-export function requireTypescript<T extends any>(path: string): T {
+export function requireTypescriptModule<T extends any>(path: string): T {
   const compileResultFilePath = compileTypescript(path)
   return runJavascriptFile(compileResultFilePath)
 }
