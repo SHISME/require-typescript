@@ -62,6 +62,8 @@ function runJavascriptFile(jsPath: string) {
     ...global,
   }
   sandbox.exports = module.exports
+  const rimraf = require('rimraf')
+  rimraf(tmpDir, function() {})
 
   return vm.runInNewContext(content, sandbox, { filename: jsPath })
 }
