@@ -8,7 +8,7 @@ const tmpDir = path.join(__dirname, './tmp')
 function compileTypescript(filePath: string): any {
   let exitCode = 0
   const tscPath = path.join(path.dirname(require.resolve('typescript')), 'tsc.js')
-  const tscScript = vm.createScript(fs.readFileSync(tscPath, 'utf8'), tscPath)
+  const tscScript = new vm.Script(fs.readFileSync(tscPath, 'utf8'), tscPath)
   const relativeFolder = path.dirname(path.relative(process.cwd(), filePath))
   const compileResultFilePath = path.join(
     tmpDir,
